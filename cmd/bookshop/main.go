@@ -9,6 +9,7 @@ import (
 	"github.com/dlbarduzzi/bookshop/internal/bookshop"
 	"github.com/dlbarduzzi/bookshop/internal/logging"
 	"github.com/dlbarduzzi/bookshop/internal/registry"
+	"github.com/dlbarduzzi/bookshop/internal/server"
 )
 
 func main() {
@@ -31,6 +32,8 @@ func start(ctx context.Context) error {
 		return err
 	}
 
+	log.Info("database connection established")
+
 	bookshopConfig := setBookshopConfig(reg)
 
 	bs, err := bookshop.NewBookshop(ctx, bookshopConfig)
@@ -38,9 +41,12 @@ func start(ctx context.Context) error {
 		return err
 	}
 
-	log.Info("application running", "port", bs.Port())
+	srv, err := server.NewServer(bs.Port())
+	if err != nil {
+		return err
+	}
 
-	return nil
+	return srv.Start(ctx, bs.Routes())
 }
 
 func setBookshopConfig(v *viper.Viper) *bookshop.Config {
