@@ -11,11 +11,11 @@ import (
 
 func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Title         string   `json:"title"`
-		Authors       []string `json:"authors"`
-		PublishedDate string   `json:"published_date"`
-		PageCount     int32    `json:"page_count"`
-		Categories    []string `json:"categories"`
+		Title         string          `json:"title"`
+		Authors       []string        `json:"authors"`
+		PublishedDate string          `json:"published_date"`
+		PageCount     model.PageCount `json:"page_count"`
+		Categories    []string        `json:"categories"`
 	}
 
 	code, err := jsoner.Unmarshal(w, r, &input)
