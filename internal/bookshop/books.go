@@ -3,6 +3,10 @@ package bookshop
 import (
 	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/dlbarduzzi/bookshop/internal/bookshop/model"
+	"github.com/dlbarduzzi/bookshop/internal/jsoner"
 )
 
 func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
@@ -12,8 +16,27 @@ func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
 func (bs *Bookshop) showBookHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := bs.readIDParam(r)
 	if err != nil {
-		http.NotFound(w, r)
+		bs.clientError(w, r, http.StatusNotFound, "Book with given id was not found.")
 		return
 	}
-	fmt.Fprintf(w, "show book with id %d\n", id)
+
+	book := model.Book{
+		ID:            id,
+		Title:         "Skills Learning",
+		Authors:       []string{"John Cooper"},
+		PublishedDate: time.Now().Format("2006-01-02"),
+		PageCount:     296,
+		Categories:    []string{"software development", "improvement"},
+		Version:       1,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+
+	data := jsoner.Envelope{
+		"book": book,
+	}
+	if err := jsoner.Marshal(w, data, http.StatusOK, nil); err != nil {
+		bs.serverError(w, r, err)
+		return
+	}
 }

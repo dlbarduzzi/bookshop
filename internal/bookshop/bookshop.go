@@ -7,6 +7,8 @@ import (
 	"github.com/dlbarduzzi/bookshop/internal/logging"
 )
 
+const version = "unknown"
+
 type Bookshop struct {
 	config *Config
 	logger *slog.Logger

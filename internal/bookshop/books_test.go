@@ -2,6 +2,7 @@ package bookshop
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -38,10 +39,10 @@ func TestShowBookHandler(t *testing.T) {
 		t.Errorf("expected status code to be %v; got %v", http.StatusOK, code)
 	}
 
-	wantBody := "show book with id 1"
+	wantBody := `{"book":{"id":1,`
 
-	if body != wantBody {
-		t.Errorf("expected response body to be %v; got %v", wantBody, body)
+	if !strings.Contains(body, wantBody) {
+		t.Errorf("expected response body to contain %v; got %v", wantBody, body)
 	}
 
 	code, body = srv.get(t, "/api/v1/books/0")
@@ -50,9 +51,9 @@ func TestShowBookHandler(t *testing.T) {
 		t.Errorf("expected status code to be %v; got %v", http.StatusNotFound, code)
 	}
 
-	wantBody = "404 page not found"
+	wantBody = "Book with given id was not found."
 
-	if body != wantBody {
-		t.Errorf("expected response body to be %v; got %v", wantBody, body)
+	if !strings.Contains(body, wantBody) {
+		t.Errorf("expected response body to contain %v; got %v", wantBody, body)
 	}
 }

@@ -2,6 +2,7 @@ package bookshop
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -18,9 +19,9 @@ func TestHealthHandler(t *testing.T) {
 		t.Errorf("expected status code to be %v; got %v", http.StatusOK, code)
 	}
 
-	wantBody := `{"status":"ok"}`
+	wantBody := `"status":"ok"`
 
-	if body != wantBody {
-		t.Errorf("expected response body to be %v; got %v", wantBody, body)
+	if !strings.Contains(body, wantBody) {
+		t.Errorf("expected response body to contain %v; got %v", wantBody, body)
 	}
 }
