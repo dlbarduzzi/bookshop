@@ -10,7 +10,25 @@ import (
 )
 
 func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new book")
+	var input struct {
+		Title         string   `json:"title"`
+		Authors       []string `json:"authors"`
+		PublishedDate string   `json:"published_date"`
+		PageCount     int32    `json:"page_count"`
+		Categories    []string `json:"categories"`
+	}
+
+	code, err := jsoner.Unmarshal(w, r, &input)
+	if err != nil {
+		if code == http.StatusInternalServerError {
+			bs.serverError(w, r, err)
+		} else {
+			bs.clientError(w, r, code, err.Error())
+		}
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (bs *Bookshop) showBookHandler(w http.ResponseWriter, r *http.Request) {

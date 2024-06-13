@@ -1,6 +1,7 @@
 package bookshop
 
 import (
+	"bytes"
 	"net/http"
 	"strings"
 	"testing"
@@ -13,16 +14,17 @@ func TestCreateBookHandler(t *testing.T) {
 	srv := newTestServer(t, bs.Routes())
 	defer srv.Close()
 
-	code, body := srv.post(t, "/api/v1/books", nil)
+	reqBody := `{"title":"Test Book"}`
+	code, body := srv.post(t, "/api/v1/books", bytes.NewReader([]byte(reqBody)))
 
 	if code != http.StatusOK {
 		t.Errorf("expected status code to be %v; got %v", http.StatusOK, code)
 	}
 
-	wantBody := "create a new book"
+	wantBody := `{Title:Test Book`
 
-	if body != wantBody {
-		t.Errorf("expected response body to be %v; got %v", wantBody, body)
+	if !strings.Contains(body, wantBody) {
+		t.Errorf("expected response body to contain %v; got %v", wantBody, body)
 	}
 }
 

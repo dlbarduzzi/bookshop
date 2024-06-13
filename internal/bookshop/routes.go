@@ -1,6 +1,10 @@
 package bookshop
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/dlbarduzzi/bookshop/internal/middleware"
+)
 
 func (bs *Bookshop) Routes() http.Handler {
 	mux := http.NewServeMux()
@@ -12,5 +16,5 @@ func (bs *Bookshop) Routes() http.Handler {
 	mux.HandleFunc("POST /api/v1/books", bs.createBookHandler)
 	mux.HandleFunc("GET /api/v1/books/{id}", bs.showBookHandler)
 
-	return mux
+	return middleware.Recovery(mux)
 }

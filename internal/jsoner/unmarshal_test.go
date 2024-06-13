@@ -3,7 +3,6 @@ package jsoner
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -137,19 +136,4 @@ func unmarshalTestHelper(t *testing.T, input string) (int, error) {
 	data := &unmarshalTestFoo{}
 
 	return Unmarshal(w, r, data)
-}
-
-func TestServerError(t *testing.T) {
-	code, err := serverError(errors.New("forced error"))
-
-	wantErr := "failed to decode json request body; forced error"
-	wantCode := http.StatusInternalServerError
-
-	if err == nil || err.Error() != wantErr {
-		t.Errorf("expected error to be %v; got %v", wantErr, err)
-	}
-
-	if code != wantCode {
-		t.Errorf("expected status code to be %d; got %d", wantCode, code)
-	}
 }

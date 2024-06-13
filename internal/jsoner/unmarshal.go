@@ -20,86 +20,59 @@ func Unmarshal(w http.ResponseWriter, r *http.Request, data interface{}) (int, e
 	d.DisallowUnknownFields()
 
 	if err := d.Decode(data); err != nil {
-		var syntaxErr *json.SyntaxError
-		var maxBytesErr *http.MaxBytesError
-		var unmarshalErr *json.UnmarshalTypeError
-
+		var (
+			syntaxError           *json.SyntaxError
+			maxBytesError         *http.MaxBytesError
+			unmarshalTypeError    *json.UnmarshalTypeError
+			invalidUnmarshalError *json.InvalidUnmarshalError
+		)
 		switch {
-		case errors.As(err, &syntaxErr):
-			return malformedPosition(syntaxErr.Offset)
+		case errors.As(err, &syntaxError):
+			return http.StatusBadRequest,
+				fmt.Errorf("request body contains malformed json at position %d",
+					syntaxError.Offset)
+
 		case errors.Is(err, io.ErrUnexpectedEOF):
-			return malformed()
-		case errors.As(err, &unmarshalErr):
-			return incorrectType(unmarshalErr.Field, unmarshalErr.Offset)
+			return http.StatusBadRequest,
+				errors.New("request body contains malformed json")
+
+		case errors.As(err, &unmarshalTypeError):
+			return http.StatusBadRequest,
+				fmt.Errorf("request body contains incorrect json type %q at position %d",
+					unmarshalTypeError.Field, unmarshalTypeError.Offset)
+
 		case strings.HasPrefix(err.Error(), "json: unknown field"):
-			return invalidField(err)
+			field := strings.TrimPrefix(err.Error(), "json: unknown field ")
+			if field == "\"\"" {
+				return http.StatusBadRequest,
+					errors.New("request body contains empty json field name")
+			} else {
+				return http.StatusBadRequest,
+					fmt.Errorf("request body contains unknown json field %s", field)
+			}
+
 		case errors.Is(err, io.EOF):
-			return bodyEmpty()
-		case errors.As(err, &maxBytesErr):
-			return bodyTooLarge(maxBytesErr.Limit)
+			return http.StatusBadRequest,
+				errors.New("request body cannot be empty")
+
+		case errors.As(err, &maxBytesError):
+			return http.StatusRequestEntityTooLarge,
+				fmt.Errorf("request body cannot be larger than %d bytes",
+					maxBytesError.Limit)
+
+		case errors.As(err, &invalidUnmarshalError):
+			panic(err)
+
 		default:
-			return serverError(err)
+			return http.StatusInternalServerError,
+				fmt.Errorf("failed to decode json request body; %w", err)
 		}
 	}
 
 	if d.More() {
-		return multipleBodies()
+		return http.StatusBadRequest,
+			errors.New("request body cannot have more than 1 json object")
 	}
 
 	return http.StatusOK, nil
-}
-
-func malformedPosition(position int64) (int, error) {
-	err := fmt.Errorf("request body contains malformed json at position %d", position)
-	code := http.StatusBadRequest
-	return code, err
-}
-
-func malformed() (int, error) {
-	err := errors.New("request body contains malformed json")
-	code := http.StatusBadRequest
-	return code, err
-}
-
-func incorrectType(field string, position int64) (int, error) {
-	err := fmt.Errorf("request body contains incorrect json type %q at position %d", field, position)
-	code := http.StatusBadRequest
-	return code, err
-}
-
-func invalidField(err error) (int, error) {
-	code := http.StatusBadRequest
-	field := strings.TrimPrefix(err.Error(), "json: unknown field ")
-
-	if field == "\"\"" {
-		err = errors.New("request body contains empty json field name")
-	} else {
-		err = fmt.Errorf("request body contains unknown json field %s", field)
-	}
-
-	return code, err
-}
-
-func bodyEmpty() (int, error) {
-	err := errors.New("request body cannot be empty")
-	code := http.StatusBadRequest
-	return code, err
-}
-
-func bodyTooLarge(limit int64) (int, error) {
-	err := fmt.Errorf("request body cannot be larger than %d bytes", limit)
-	code := http.StatusRequestEntityTooLarge
-	return code, err
-}
-
-func serverError(err error) (int, error) {
-	msg := fmt.Errorf("failed to decode json request body; %w", err)
-	code := http.StatusInternalServerError
-	return code, msg
-}
-
-func multipleBodies() (int, error) {
-	err := errors.New("request body cannot have more than 1 json object")
-	code := http.StatusBadRequest
-	return code, err
 }
