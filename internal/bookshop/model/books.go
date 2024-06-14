@@ -1,10 +1,12 @@
 package model
 
 import (
+	"database/sql"
 	"strings"
 	"time"
 
 	"github.com/dlbarduzzi/bookshop/internal/validator"
+	"github.com/lib/pq"
 )
 
 type Book struct {
@@ -17,6 +19,47 @@ type Book struct {
 	Version       int32     `json:"version"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+type BookModel struct {
+	DB *sql.DB
+}
+
+type BookStore interface {
+	Insert(book *Book) error
+	Get(id int64) (*Book, error)
+	Update(book *Book) error
+	Delete(id int64) error
+}
+
+func (m BookModel) Insert(book *Book) error {
+	query := `
+		INSERT INTO books (title, authors, published_date, page_count, categories)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id, version, created_at, updated_at`
+
+	input := []any{
+		book.Title,
+		pq.Array(book.Authors),
+		book.PublishedDate,
+		book.PageCount,
+		pq.Array(book.Categories),
+	}
+
+	return m.DB.QueryRow(query, input...).Scan(
+		&book.ID, &book.Version, &book.CreatedAt, &book.UpdatedAt)
+}
+
+func (m BookModel) Get(id int64) (*Book, error) {
+	return nil, nil
+}
+
+func (m BookModel) Update(book *Book) error {
+	return nil
+}
+
+func (m BookModel) Delete(id int64) error {
+	return nil
 }
 
 func (b *Book) Validate(v *validator.Validator) {

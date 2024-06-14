@@ -1,6 +1,7 @@
 package bookshop
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -38,11 +39,19 @@ func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := bs.models.Books.Insert(book); err != nil {
+		bs.serverError(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/api/v1/books/%d", book.ID))
+
 	data := jsoner.Envelope{
 		"book": book,
 	}
 
-	if err := jsoner.Marshal(w, data, http.StatusCreated, nil); err != nil {
+	if err := jsoner.Marshal(w, data, http.StatusCreated, headers); err != nil {
 		bs.serverError(w, r, err)
 		return
 	}

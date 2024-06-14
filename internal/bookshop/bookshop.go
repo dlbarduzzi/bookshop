@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log/slog"
 
+	"github.com/dlbarduzzi/bookshop/internal/bookshop/model"
 	"github.com/dlbarduzzi/bookshop/internal/logging"
 )
 
@@ -13,6 +14,7 @@ const version = "unknown"
 type Bookshop struct {
 	config *Config
 	logger *slog.Logger
+	models model.Models
 }
 
 func NewBookshop(ctx context.Context, cfg *Config, db *sql.DB) (*Bookshop, error) {
@@ -26,6 +28,7 @@ func NewBookshop(ctx context.Context, cfg *Config, db *sql.DB) (*Bookshop, error
 	return &Bookshop{
 		config: cfg,
 		logger: log,
+		models: model.NewModels(db),
 	}, nil
 }
 

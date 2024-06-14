@@ -2,17 +2,21 @@ package bookshop
 
 import (
 	"bytes"
+	"database/sql"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/dlbarduzzi/bookshop/internal/bookshop/model/mocks"
 )
 
 func newTestBookshop(t *testing.T) *Bookshop {
 	t.Helper()
 	return &Bookshop{
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+		models: mocks.NewModels(&sql.DB{}),
 	}
 }
 
