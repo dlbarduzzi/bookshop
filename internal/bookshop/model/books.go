@@ -62,6 +62,11 @@ func (b *Book) validateAuthors(v *validator.Validator) {
 		return
 	}
 
+	if len(authors) > 3 {
+		v.AddError("authors", "Authors cannot have more than 3 values.")
+		return
+	}
+
 	if !validator.ValuesAreUnique(authors) {
 		v.AddError("authors", "Authors cannot have duplicated values.")
 		return

@@ -9,3 +9,11 @@
 ## Getting started
 
 Create a `.env` file similar to [.env.example](./.env.example) at the root of the project.
+
+## Database setup
+
+Read the [database.md](./docs/database.md) docs for detailed information about setting up a local test database.
+
+## LICENSE
+
+[MIT](./LICENSE)

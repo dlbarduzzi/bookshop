@@ -2,6 +2,7 @@ package bookshop
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 
 	"github.com/dlbarduzzi/bookshop/internal/logging"
@@ -14,7 +15,7 @@ type Bookshop struct {
 	logger *slog.Logger
 }
 
-func NewBookshop(ctx context.Context, cfg *Config) (*Bookshop, error) {
+func NewBookshop(ctx context.Context, cfg *Config, db *sql.DB) (*Bookshop, error) {
 	log := logging.LoggerFromContext(ctx)
 
 	cfg, err := cfg.parseConfig()

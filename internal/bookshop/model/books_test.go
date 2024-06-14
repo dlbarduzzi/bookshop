@@ -103,6 +103,12 @@ func TestBookValidateAuthors(t *testing.T) {
 			wantErr: "At least 1 author is required.",
 		},
 		{
+			name:    "too_many",
+			authors: []string{"T1", "T2", "T3", "T4"},
+			isValid: false,
+			wantErr: "Authors cannot have more than 3 values.",
+		},
+		{
 			name:    "duplicate",
 			authors: []string{"Test", "Test"},
 			isValid: false,
