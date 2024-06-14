@@ -12,7 +12,7 @@ import (
 // maxBodyBytes is the maximum number of bytes a json payload request size can be.
 const maxBodyBytes = 1_048_576 // 1MB
 
-func Unmarshal(w http.ResponseWriter, r *http.Request, data interface{}) (int, error) {
+func Unmarshal(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	defer r.Body.Close()
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
 
@@ -28,51 +28,42 @@ func Unmarshal(w http.ResponseWriter, r *http.Request, data interface{}) (int, e
 		)
 		switch {
 		case errors.As(err, &syntaxError):
-			return http.StatusBadRequest,
-				fmt.Errorf("request body contains malformed json at position %d",
-					syntaxError.Offset)
+			return fmt.Errorf("request body contains malformed json at position %d",
+				syntaxError.Offset)
 
 		case errors.Is(err, io.ErrUnexpectedEOF):
-			return http.StatusBadRequest,
-				errors.New("request body contains malformed json")
+			return errors.New("request body contains malformed json")
 
 		case errors.As(err, &unmarshalTypeError):
-			return http.StatusBadRequest,
-				fmt.Errorf("request body contains incorrect json type %q at position %d",
-					unmarshalTypeError.Field, unmarshalTypeError.Offset)
+			return fmt.Errorf("request body contains incorrect json type %q at position %d",
+				unmarshalTypeError.Field, unmarshalTypeError.Offset)
 
 		case strings.HasPrefix(err.Error(), "json: unknown field"):
 			field := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			if field == "\"\"" {
-				return http.StatusBadRequest,
-					errors.New("request body contains empty json field name")
+				return errors.New("request body contains empty json field name")
 			} else {
-				return http.StatusBadRequest,
-					fmt.Errorf("request body contains unknown json field %s", field)
+				return fmt.Errorf("request body contains unknown json field %s", field)
 			}
 
 		case errors.Is(err, io.EOF):
-			return http.StatusBadRequest,
-				errors.New("request body cannot be empty")
+			return errors.New("request body cannot be empty")
 
 		case errors.As(err, &maxBytesError):
-			return http.StatusRequestEntityTooLarge,
-				fmt.Errorf("request body cannot be larger than %d bytes",
-					maxBytesError.Limit)
+			return fmt.Errorf("request body cannot be larger than %d bytes",
+				maxBytesError.Limit)
 
 		case errors.As(err, &invalidUnmarshalError):
 			panic(err)
 
 		default:
-			return http.StatusInternalServerError,
-				fmt.Errorf("failed to decode json request body; %w", err)
+			return err
 		}
 	}
 
 	if d.More() {
-		return http.StatusBadRequest,
-			errors.New("request body cannot have more than 1 json object")
+		return errors.New("request body cannot have more than 1 json object")
 	}
 
-	return http.StatusOK, nil
+	return nil
 }

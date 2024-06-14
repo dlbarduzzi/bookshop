@@ -110,3 +110,53 @@ func TestClientError(t *testing.T) {
 		t.Errorf("expected error code to be %v; got %v", ErrCodeClientError, resp.ErrorCode)
 	}
 }
+
+func TestValidationError(t *testing.T) {
+	t.Parallel()
+	bs := newTestBookshop(t)
+
+	r, err := http.NewRequest(http.MethodGet, "/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errMessage := "Your request validation failed."
+
+	w := httptest.NewRecorder()
+	bs.validationError(w, r, errMessage)
+
+	wantCode := http.StatusBadRequest
+
+	if w.Code != wantCode {
+		t.Errorf("expected status code to be %v; got %v", wantCode, w.Code)
+	}
+
+	body, err := io.ReadAll(w.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := struct {
+		OK        bool   `json:"ok"`
+		Error     string `json:"error"`
+		ErrorCode string `json:"error_code"`
+	}{}
+
+	if err := json.Unmarshal(body, &resp); err != nil {
+		t.Fatal(err)
+	}
+
+	wantOK := false
+
+	if resp.OK != wantOK {
+		t.Errorf("expected ok status to be %v; got %v", wantOK, resp.OK)
+	}
+
+	if resp.Error != errMessage {
+		t.Errorf("expected error to be %v; got %v", errMessage, resp.Error)
+	}
+
+	if resp.ErrorCode != ErrCodeValidationError {
+		t.Errorf("expected error code to be %v; got %v", ErrCodeValidationError, resp.ErrorCode)
+	}
+}

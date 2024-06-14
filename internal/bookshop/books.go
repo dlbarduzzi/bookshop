@@ -1,12 +1,12 @@
 package bookshop
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/dlbarduzzi/bookshop/internal/bookshop/model"
 	"github.com/dlbarduzzi/bookshop/internal/jsoner"
+	"github.com/dlbarduzzi/bookshop/internal/validator"
 )
 
 func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,17 +18,34 @@ func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
 		Categories    []string        `json:"categories"`
 	}
 
-	code, err := jsoner.Unmarshal(w, r, &input)
-	if err != nil {
-		if code == http.StatusInternalServerError {
-			bs.serverError(w, r, err)
-		} else {
-			bs.clientError(w, r, code, err.Error())
-		}
+	if err := jsoner.Unmarshal(w, r, &input); err != nil {
+		bs.clientError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	book := &model.Book{
+		Title:         input.Title,
+		Authors:       input.Authors,
+		PublishedDate: input.PublishedDate,
+		PageCount:     input.PageCount,
+		Categories:    input.Categories,
+	}
+
+	v := validator.NewValidator()
+
+	if book.Validate(v); !v.IsValid() {
+		bs.validationError(w, r, v.Errors)
+		return
+	}
+
+	data := jsoner.Envelope{
+		"book": book,
+	}
+
+	if err := jsoner.Marshal(w, data, http.StatusCreated, nil); err != nil {
+		bs.serverError(w, r, err)
+		return
+	}
 }
 
 func (bs *Bookshop) showBookHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +70,7 @@ func (bs *Bookshop) showBookHandler(w http.ResponseWriter, r *http.Request) {
 	data := jsoner.Envelope{
 		"book": book,
 	}
+
 	if err := jsoner.Marshal(w, data, http.StatusOK, nil); err != nil {
 		bs.serverError(w, r, err)
 		return
