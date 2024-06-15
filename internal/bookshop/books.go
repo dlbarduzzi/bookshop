@@ -1,9 +1,9 @@
 package bookshop
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/dlbarduzzi/bookshop/internal/bookshop/model"
 	"github.com/dlbarduzzi/bookshop/internal/jsoner"
@@ -64,16 +64,15 @@ func (bs *Bookshop) showBookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	book := model.Book{
-		ID:            id,
-		Title:         "Skills Learning",
-		Authors:       []string{"John Cooper"},
-		PublishedDate: time.Now().Format("2006-01-02"),
-		PageCount:     296,
-		Categories:    []string{"software development", "improvement"},
-		Version:       1,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
+	book, err := bs.models.Books.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, model.ErrRecordNotFound):
+			bs.clientError(w, r, http.StatusNotFound, "Book with given id was not found.")
+		default:
+			bs.serverError(w, r, err)
+		}
+		return
 	}
 
 	data := jsoner.Envelope{

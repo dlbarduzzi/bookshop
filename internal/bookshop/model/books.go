@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
@@ -38,7 +39,7 @@ func (m BookModel) Insert(book *Book) error {
 		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id, version, created_at, updated_at`
 
-	input := []any{
+	args := []any{
 		book.Title,
 		pq.Array(book.Authors),
 		book.PublishedDate,
@@ -46,12 +47,44 @@ func (m BookModel) Insert(book *Book) error {
 		pq.Array(book.Categories),
 	}
 
-	return m.DB.QueryRow(query, input...).Scan(
+	return m.DB.QueryRow(query, args...).Scan(
 		&book.ID, &book.Version, &book.CreatedAt, &book.UpdatedAt)
 }
 
 func (m BookModel) Get(id int64) (*Book, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'), page_count,
+			categories, version, created_at, updated_at
+		FROM books
+		WHERE id = $1`
+
+	var book Book
+
+	err := m.DB.QueryRow(query, id).Scan(
+		&book.ID,
+		&book.Title,
+		pq.Array(&book.Authors),
+		&book.PublishedDate,
+		&book.PageCount,
+		pq.Array(&book.Categories),
+		&book.Version,
+		&book.CreatedAt,
+		&book.UpdatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &book, nil
 }
 
 func (m BookModel) Update(book *Book) error {
