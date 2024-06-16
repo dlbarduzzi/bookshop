@@ -88,7 +88,24 @@ func (m BookModel) Get(id int64) (*Book, error) {
 }
 
 func (m BookModel) Update(book *Book) error {
-	return nil
+	query := `
+		UPDATE books
+		SET title = $1, authors = $2, published_date = $3, page_count = $4,
+			categories = $5, version = version + 1, updated_at = $6
+		WHERE id = $7
+		RETURNING version, updated_at`
+
+	args := []any{
+		book.Title,
+		pq.Array(book.Authors),
+		book.PublishedDate,
+		book.PageCount,
+		pq.Array(book.Categories),
+		time.Now().UTC(),
+		book.ID,
+	}
+
+	return m.DB.QueryRow(query, args...).Scan(&book.Version, &book.UpdatedAt)
 }
 
 func (m BookModel) Delete(id int64) error {
