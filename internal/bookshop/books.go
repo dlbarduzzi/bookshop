@@ -143,3 +143,31 @@ func (bs *Bookshop) updateBookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (bs *Bookshop) deleteBookHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := bs.readIDParam(r)
+	if err != nil {
+		bs.clientError(w, r, http.StatusNotFound, "Book with given id was not found.")
+		return
+	}
+
+	err = bs.models.Books.Delete(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, model.ErrRecordNotFound):
+			bs.clientError(w, r, http.StatusNotFound, "Book with given id was not found.")
+		default:
+			bs.serverError(w, r, err)
+		}
+		return
+	}
+
+	data := jsoner.Envelope{
+		"message": "Book successfully deleted.",
+	}
+
+	if err := jsoner.Marshal(w, data, http.StatusOK, nil); err != nil {
+		bs.serverError(w, r, err)
+		return
+	}
+}

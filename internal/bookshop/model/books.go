@@ -109,6 +109,26 @@ func (m BookModel) Update(book *Book) error {
 }
 
 func (m BookModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `DELETE FROM books where id = $1`
+
+	res, err := m.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
 	return nil
 }
 

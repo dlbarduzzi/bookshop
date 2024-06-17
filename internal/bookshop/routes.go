@@ -16,6 +16,7 @@ func (bs *Bookshop) Routes() http.Handler {
 	mux.HandleFunc("POST /api/v1/books", bs.createBookHandler)
 	mux.HandleFunc("GET /api/v1/books/{id}", bs.showBookHandler)
 	mux.HandleFunc("PUT /api/v1/books/{id}", bs.updateBookHandler)
+	mux.HandleFunc("DELETE /api/v1/books/{id}", bs.deleteBookHandler)
 
 	return middleware.Recovery(mux)
 }
