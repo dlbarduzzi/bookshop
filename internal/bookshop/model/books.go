@@ -92,7 +92,7 @@ func (m BookModel) Update(book *Book) error {
 		UPDATE books
 		SET title = $1, authors = $2, published_date = $3, page_count = $4,
 			categories = $5, version = version + 1, updated_at = $6
-		WHERE id = $7
+		WHERE id = $7 AND version = $8
 		RETURNING version, updated_at`
 
 	args := []any{
@@ -103,9 +103,20 @@ func (m BookModel) Update(book *Book) error {
 		pq.Array(book.Categories),
 		time.Now().UTC(),
 		book.ID,
+		book.Version,
 	}
 
-	return m.DB.QueryRow(query, args...).Scan(&book.Version, &book.UpdatedAt)
+	err := m.DB.QueryRow(query, args...).Scan(&book.Version, &book.UpdatedAt)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m BookModel) Delete(id int64) error {

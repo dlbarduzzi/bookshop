@@ -104,11 +104,11 @@ func (bs *Bookshop) updateBookHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var input struct {
-		Title         string          `json:"title"`
-		Authors       []string        `json:"authors"`
-		PublishedDate string          `json:"published_date"`
-		PageCount     model.PageCount `json:"page_count"`
-		Categories    []string        `json:"categories"`
+		Title         *string          `json:"title"`
+		Authors       []string         `json:"authors"`
+		PublishedDate *string          `json:"published_date"`
+		PageCount     *model.PageCount `json:"page_count"`
+		Categories    []string         `json:"categories"`
 	}
 
 	if err := jsoner.Unmarshal(w, r, &input); err != nil {
@@ -116,11 +116,21 @@ func (bs *Bookshop) updateBookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	book.Title = input.Title
-	book.Authors = input.Authors
-	book.PublishedDate = input.PublishedDate
-	book.PageCount = input.PageCount
-	book.Categories = input.Categories
+	if input.Title != nil {
+		book.Title = *input.Title
+	}
+	if input.Authors != nil {
+		book.Authors = input.Authors
+	}
+	if input.PublishedDate != nil {
+		book.PublishedDate = *input.PublishedDate
+	}
+	if input.PageCount != nil {
+		book.PageCount = *input.PageCount
+	}
+	if input.Categories != nil {
+		book.Categories = input.Categories
+	}
 
 	v := validator.NewValidator()
 
@@ -130,7 +140,12 @@ func (bs *Bookshop) updateBookHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := bs.models.Books.Update(book); err != nil {
-		bs.serverError(w, r, err)
+		switch {
+		case errors.Is(err, model.ErrEditConflict):
+			bs.clientError(w, r, http.StatusConflict, "Book was not updated due to an edit conflict.")
+		default:
+			bs.serverError(w, r, err)
+		}
 		return
 	}
 
@@ -138,7 +153,7 @@ func (bs *Bookshop) updateBookHandler(w http.ResponseWriter, r *http.Request) {
 		"book": book,
 	}
 
-	if err := jsoner.Marshal(w, data, http.StatusCreated, nil); err != nil {
+	if err := jsoner.Marshal(w, data, http.StatusOK, nil); err != nil {
 		bs.serverError(w, r, err)
 		return
 	}
