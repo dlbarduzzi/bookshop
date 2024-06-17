@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"strings"
@@ -47,7 +48,10 @@ func (m BookModel) Insert(book *Book) error {
 		pq.Array(book.Categories),
 	}
 
-	return m.DB.QueryRow(query, args...).Scan(
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(
 		&book.ID, &book.Version, &book.CreatedAt, &book.UpdatedAt)
 }
 
@@ -64,7 +68,10 @@ func (m BookModel) Get(id int64) (*Book, error) {
 
 	var book Book
 
-	err := m.DB.QueryRow(query, id).Scan(
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
 		&book.ID,
 		&book.Title,
 		pq.Array(&book.Authors),
@@ -106,7 +113,10 @@ func (m BookModel) Update(book *Book) error {
 		book.Version,
 	}
 
-	err := m.DB.QueryRow(query, args...).Scan(&book.Version, &book.UpdatedAt)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&book.Version, &book.UpdatedAt)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -126,7 +136,10 @@ func (m BookModel) Delete(id int64) error {
 
 	query := `DELETE FROM books where id = $1`
 
-	res, err := m.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	res, err := m.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
