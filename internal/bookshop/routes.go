@@ -13,6 +13,7 @@ func (bs *Bookshop) Routes() http.Handler {
 	mux.HandleFunc("GET /api/v1/health", bs.healthHandler)
 
 	// Books endpoints.
+	mux.HandleFunc("GET /api/v1/books", bs.listBookHandler)
 	mux.HandleFunc("POST /api/v1/books", bs.createBookHandler)
 	mux.HandleFunc("GET /api/v1/books/{id}", bs.showBookHandler)
 	mux.HandleFunc("PATCH /api/v1/books/{id}", bs.updateBookHandler)

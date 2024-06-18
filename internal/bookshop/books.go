@@ -10,6 +10,43 @@ import (
 	"github.com/dlbarduzzi/bookshop/internal/validator"
 )
 
+func (bs *Bookshop) listBookHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title      string
+		Categories []string
+		model.Filters
+	}
+
+	q := r.URL.Query()
+	v := validator.NewValidator()
+
+	input.Title = bs.readString(q, "title", "")
+	input.Categories = bs.readCSV(q, "categories", []string{})
+
+	input.Filters.Page = bs.readInt(q, "page", 1, v)
+	input.Filters.PageSize = bs.readInt(q, "page_size", 20, v)
+
+	input.Filters.Sort = bs.readString(q, "sort", "id")
+	input.Filters.SortSafeList = []string{
+		"id", "title", "published_date", "page_count",
+		"-id", "-title", "-published_date", "-page_count",
+	}
+
+	if input.Filters.Validate(v); !v.IsValid() {
+		bs.validationError(w, r, v.Errors)
+		return
+	}
+
+	data := jsoner.Envelope{
+		"input": input,
+	}
+
+	if err := jsoner.Marshal(w, data, http.StatusOK, nil); err != nil {
+		bs.serverError(w, r, err)
+		return
+	}
+}
+
 func (bs *Bookshop) createBookHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Title         string          `json:"title"`
