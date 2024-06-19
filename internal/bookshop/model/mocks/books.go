@@ -16,6 +16,10 @@ var book = &model.Book{
 	Title: "Test Title",
 }
 
+func (m BookModel) GetAll(title string, categories []string, filters model.Filters) ([]*model.Book, error) {
+	return nil, nil
+}
+
 func (m BookModel) Insert(book *model.Book) error {
 	if book.Title == "Force Error" {
 		return errors.New("forced error")

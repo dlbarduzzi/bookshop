@@ -28,10 +28,59 @@ type BookModel struct {
 }
 
 type BookStore interface {
+	GetAll(title string, categories []string, filters Filters) ([]*Book, error)
 	Insert(book *Book) error
 	Get(id int64) (*Book, error)
 	Update(book *Book) error
 	Delete(id int64) error
+}
+
+func (m BookModel) GetAll(title string, categories []string, filters Filters) ([]*Book, error) {
+	query := `
+		SELECT id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'), page_count,
+			categories, version, created_at, updated_at
+		FROM books
+		WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
+        AND (categories @> $2 or $2 = '{}')
+		ORDER BY id`
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, title, pq.Array(categories))
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	books := []*Book{}
+
+	for rows.Next() {
+		var book Book
+
+		err := rows.Scan(
+			&book.ID,
+			&book.Title,
+			pq.Array(&book.Authors),
+			&book.PublishedDate,
+			&book.PageCount,
+			pq.Array(&book.Categories),
+			&book.Version,
+			&book.CreatedAt,
+			&book.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		books = append(books, &book)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return books, nil
 }
 
 func (m BookModel) Insert(book *Book) error {
