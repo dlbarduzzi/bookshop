@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -28,37 +29,43 @@ type BookModel struct {
 }
 
 type BookStore interface {
-	GetAll(title string, categories []string, filters Filters) ([]*Book, error)
+	GetAll(title string, categories []string, filters Filters) ([]*Book, Metadata, error)
 	Insert(book *Book) error
 	Get(id int64) (*Book, error)
 	Update(book *Book) error
 	Delete(id int64) error
 }
 
-func (m BookModel) GetAll(title string, categories []string, filters Filters) ([]*Book, error) {
-	query := `
-		SELECT id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'), page_count,
+func (m BookModel) GetAll(title string, categories []string, filters Filters) ([]*Book, Metadata, error) {
+	query := fmt.Sprintf(`
+		SELECT count(*) OVER(), id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'), page_count,
 			categories, version, created_at, updated_at
 		FROM books
 		WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
         AND (categories @> $2 or $2 = '{}')
-		ORDER BY id`
+		ORDER BY %s %s, id ASC
+		LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, query, title, pq.Array(categories))
+	args := []any{title, pq.Array(categories), filters.limit(), filters.offset()}
+
+	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
+
 	books := []*Book{}
+	totalRecords := 0
 
 	for rows.Next() {
 		var book Book
 
 		err := rows.Scan(
+			&totalRecords,
 			&book.ID,
 			&book.Title,
 			pq.Array(&book.Authors),
@@ -70,17 +77,19 @@ func (m BookModel) GetAll(title string, categories []string, filters Filters) ([
 			&book.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		books = append(books, &book)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
-	return books, nil
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return books, metadata, nil
 }
 
 func (m BookModel) Insert(book *Book) error {

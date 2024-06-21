@@ -37,14 +37,15 @@ func (bs *Bookshop) listBookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	books, err := bs.models.Books.GetAll(input.Title, input.Categories, input.Filters)
+	books, metadata, err := bs.models.Books.GetAll(input.Title, input.Categories, input.Filters)
 	if err != nil {
 		bs.serverError(w, r, err)
 		return
 	}
 
 	data := jsoner.Envelope{
-		"books": books,
+		"metadata": metadata,
+		"books":    books,
 	}
 
 	if err := jsoner.Marshal(w, data, http.StatusOK, nil); err != nil {
