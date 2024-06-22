@@ -19,5 +19,12 @@ func (bs *Bookshop) Routes() http.Handler {
 	mux.HandleFunc("PATCH /api/v1/books/{id}", bs.updateBookHandler)
 	mux.HandleFunc("DELETE /api/v1/books/{id}", bs.deleteBookHandler)
 
-	return middleware.Recovery(mux)
+	// Should read these values from env variables.
+	limiter := middleware.Limiter{
+		RPS:     2,
+		Burst:   4,
+		Enabled: true,
+	}
+
+	return middleware.Recovery(limiter.RateLimit(mux))
 }
