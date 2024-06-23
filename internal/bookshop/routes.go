@@ -19,6 +19,10 @@ func (bs *Bookshop) Routes() http.Handler {
 	mux.HandleFunc("PATCH /api/v1/books/{id}", bs.updateBookHandler)
 	mux.HandleFunc("DELETE /api/v1/books/{id}", bs.deleteBookHandler)
 
+	// Users endpoints.
+	mux.HandleFunc("POST /api/v1/users", bs.registerUserHandler)
+	mux.HandleFunc("GET /api/v1/users/verify-email", bs.verifyEmailUserHandler)
+
 	// Should read these values from env variables.
 	limiter := middleware.Limiter{
 		RPS:     2,

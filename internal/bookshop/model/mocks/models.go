@@ -7,11 +7,15 @@ import (
 )
 
 type Models struct {
-	Books *BookModel
+	Books  *BookModel
+	Users  *UserModel
+	Tokens *TokenModel
 }
 
 func NewModels(db *sql.DB) model.Models {
 	return model.Models{
-		Books: &BookModel{DB: db},
+		Books:  &BookModel{DB: db},
+		Users:  &UserModel{DB: db},
+		Tokens: &TokenModel{DB: db},
 	}
 }

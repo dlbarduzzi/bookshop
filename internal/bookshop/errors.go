@@ -11,6 +11,7 @@ var (
 	ErrCodeServerError     = "server-error"
 	ErrCodeClientError     = "client-error"
 	ErrCodeValidationError = "validation-error"
+	ErrCodeConflictError   = "conflict-error"
 )
 
 func (bs *Bookshop) serverError(w http.ResponseWriter, r *http.Request, err error) {
@@ -48,6 +49,18 @@ func (bs *Bookshop) validationError(w http.ResponseWriter, r *http.Request, errs
 		"error_code": ErrCodeValidationError,
 	}
 	if err := jsoner.Marshal(w, data, http.StatusBadRequest, nil); err != nil {
+		bs.serverError(w, r, err)
+		return
+	}
+}
+
+func (bs *Bookshop) conflictError(w http.ResponseWriter, r *http.Request, msg string) {
+	data := jsoner.Envelope{
+		"ok":         false,
+		"error":      msg,
+		"error_code": ErrCodeConflictError,
+	}
+	if err := jsoner.Marshal(w, data, http.StatusConflict, nil); err != nil {
 		bs.serverError(w, r, err)
 		return
 	}
