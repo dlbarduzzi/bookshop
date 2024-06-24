@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -33,7 +34,7 @@ func NewServer(port int) (*Server, error) {
 	}, nil
 }
 
-func (s *Server) Start(ctx context.Context, handler http.Handler) error {
+func (s *Server) Start(ctx context.Context, handler http.Handler, wg *sync.WaitGroup) error {
 	log := logging.LoggerFromContext(ctx)
 
 	srv := &http.Server{
@@ -56,7 +57,15 @@ func (s *Server) Start(ctx context.Context, handler http.Handler) error {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 		defer cancel()
 
-		shutdownErr <- srv.Shutdown(ctx)
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			shutdownErr <- err
+		}
+
+		log.Info("completing background tasks")
+
+		wg.Wait()
+		shutdownErr <- nil
 	}()
 
 	log.Info("starting server", slog.Int("port", s.port))

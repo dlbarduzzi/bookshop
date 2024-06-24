@@ -79,11 +79,19 @@ func (bs *Bookshop) registerUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	bs.background(func() {
+		err = bs.mailer.Send(user.Email, "user_welcome.tmpl", user)
+		if err != nil {
+			bs.serverError(w, r, err)
+			return
+		}
+	})
+
 	data := jsoner.Envelope{
 		"user": user,
 	}
 
-	if err := jsoner.Marshal(w, data, http.StatusCreated, nil); err != nil {
+	if err := jsoner.Marshal(w, data, http.StatusAccepted, nil); err != nil {
 		bs.serverError(w, r, err)
 		return
 	}

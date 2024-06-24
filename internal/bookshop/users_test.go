@@ -18,7 +18,7 @@ func TestRegisterUserHandler(t *testing.T) {
 	srv := newTestServer(t, bs.Routes())
 	defer srv.Close()
 
-	wantCode := http.StatusCreated
+	wantCode := http.StatusAccepted
 
 	code, body := srv.post(t, "/api/v1/users", bytes.NewReader([]byte(reqBody)))
 	if code != wantCode {

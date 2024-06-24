@@ -2,6 +2,7 @@ package bookshop
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -45,4 +46,20 @@ func (bs *Bookshop) readInt(qs url.Values, key string, defaultValue int, v *vali
 		return defaultValue
 	}
 	return i
+}
+
+func (bs *Bookshop) background(fn func()) {
+	bs.wg.Add(1)
+
+	go func() {
+		defer bs.wg.Done()
+
+		defer func() {
+			if err := recover(); err != nil {
+				bs.logger.Error("background job panic", "err", fmt.Sprintf("%v", err))
+			}
+		}()
+
+		fn()
+	}()
 }

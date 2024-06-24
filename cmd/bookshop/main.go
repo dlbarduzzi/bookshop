@@ -9,6 +9,7 @@ import (
 	"github.com/dlbarduzzi/bookshop/internal/bookshop"
 	"github.com/dlbarduzzi/bookshop/internal/database"
 	"github.com/dlbarduzzi/bookshop/internal/logging"
+	"github.com/dlbarduzzi/bookshop/internal/mailer"
 	"github.com/dlbarduzzi/bookshop/internal/registry"
 	"github.com/dlbarduzzi/bookshop/internal/server"
 )
@@ -44,7 +45,10 @@ func start(ctx context.Context) error {
 	defer db.Close()
 	log.Info("database connection established")
 
-	bs, err := bookshop.NewBookshop(ctx, bookshopConfig, db)
+	mailerConfig := setMailerConfig(reg)
+	mailer := mailer.NewMailer(&mailerConfig)
+
+	bs, err := bookshop.NewBookshop(ctx, bookshopConfig, db, mailer)
 	if err != nil {
 		return err
 	}
@@ -54,7 +58,7 @@ func start(ctx context.Context) error {
 		return err
 	}
 
-	return srv.Start(ctx, bs.Routes())
+	return srv.Start(ctx, bs.Routes(), bs.WaitGroup())
 }
 
 func setBookshopConfig(v *viper.Viper) *bookshop.Config {
@@ -69,5 +73,15 @@ func setDatabaseConfig(v *viper.Viper) *database.Config {
 		MaxOpenConns:    v.GetInt("DB_MAX_OPEN_CONNS"),
 		MaxIdleConns:    v.GetInt("DB_MAX_IDLE_CONNS"),
 		ConnMaxIdleTime: v.GetDuration("DB_CONN_MAX_IDLE_TIME"),
+	}
+}
+
+func setMailerConfig(v *viper.Viper) mailer.Config {
+	return mailer.Config{
+		Host:     v.GetString("MAILER_HOST"),
+		Port:     v.GetInt("MAILER_PORT"),
+		Username: v.GetString("MAILER_USERNAME"),
+		Password: v.GetString("MAILER_PASSWORD"),
+		Sender:   v.GetString("MAILER_SENDER"),
 	}
 }
