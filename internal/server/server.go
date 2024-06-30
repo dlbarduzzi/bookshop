@@ -17,9 +17,10 @@ import (
 )
 
 type Server struct {
-	ip       string
-	port     int
-	listener net.Listener
+	ip        string
+	port      int
+	listener  net.Listener
+	WaitGroup *sync.WaitGroup
 }
 
 func NewServer(port int) (*Server, error) {
@@ -34,7 +35,7 @@ func NewServer(port int) (*Server, error) {
 	}, nil
 }
 
-func (s *Server) Start(ctx context.Context, handler http.Handler, wg *sync.WaitGroup) error {
+func (s *Server) Start(ctx context.Context, handler http.Handler) error {
 	log := logging.LoggerFromContext(ctx)
 
 	srv := &http.Server{
@@ -50,9 +51,9 @@ func (s *Server) Start(ctx context.Context, handler http.Handler, wg *sync.WaitG
 	go func() {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		s := <-quit
+		sig := <-quit
 
-		log.Info("shutting down server", slog.String("signal", s.String()))
+		log.Info("shutting down server", slog.String("signal", sig.String()))
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 		defer cancel()
@@ -64,7 +65,7 @@ func (s *Server) Start(ctx context.Context, handler http.Handler, wg *sync.WaitG
 
 		log.Info("completing background tasks")
 
-		wg.Wait()
+		s.WaitGroup.Wait()
 		shutdownErr <- nil
 	}()
 

@@ -73,14 +73,18 @@ func (bs *Bookshop) registerUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	_, err = bs.models.Tokens.Save(user.ID, time.Hour*24*1, model.ScopeEmailVerification)
+	token, err := bs.models.Tokens.Save(user.ID, time.Hour*24*1, model.ScopeEmailVerification)
 	if err != nil {
 		bs.serverError(w, r, err)
 		return
 	}
 
 	bs.background(func() {
-		err = bs.mailer.Send(user.Email, "user_welcome.tmpl", user)
+		data := map[string]any{
+			"activationToken": token.Plaintext,
+			"userID":          user.ID,
+		}
+		err = bs.mailer.Send(user.Email, "user_welcome.tmpl", data)
 		if err != nil {
 			bs.serverError(w, r, err)
 			return

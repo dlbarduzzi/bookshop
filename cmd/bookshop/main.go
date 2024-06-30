@@ -58,7 +58,8 @@ func start(ctx context.Context) error {
 		return err
 	}
 
-	return srv.Start(ctx, bs.Routes(), bs.WaitGroup())
+	srv.WaitGroup = bs.WaitGroup()
+	return srv.Start(ctx, bs.Routes())
 }
 
 func setBookshopConfig(v *viper.Viper) *bookshop.Config {
