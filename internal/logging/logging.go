@@ -1,10 +1,24 @@
 package logging
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"strings"
+	"sync"
+)
+
+// contextKey is the logger string type used to avoid collisions.
+type contextKey string
+
+// loggerKey identifies the logger value stored in the context.
+const loggerKey = contextKey("logger")
+
+var (
+	// defaultLogger is the default logger that should be initialized only once per package.
+	defaultLogger     *slog.Logger
+	defaultLoggerOnce sync.Once
 )
 
 func NewLogger(dev bool, level string) *slog.Logger {
@@ -31,6 +45,24 @@ func NewLoggerFromEnv() *slog.Logger {
 	dev := strings.TrimSpace(strings.ToLower(os.Getenv("LOG_MODE"))) == "dev"
 	level := strings.TrimSpace(strings.ToLower(os.Getenv("LOG_LEVEL")))
 	return NewLogger(dev, level)
+}
+
+func DefaultLogger() *slog.Logger {
+	defaultLoggerOnce.Do(func() {
+		defaultLogger = NewLoggerFromEnv()
+	})
+	return defaultLogger
+}
+
+func LoggerFromContext(ctx context.Context) *slog.Logger {
+	if log, ok := ctx.Value(loggerKey).(*slog.Logger); ok {
+		return log
+	}
+	return DefaultLogger()
+}
+
+func LoggerWithContext(ctx context.Context, logger *slog.Logger) context.Context {
+	return context.WithValue(ctx, loggerKey, logger)
 }
 
 type slogAttr func(groups []string, attr slog.Attr) slog.Attr
@@ -60,7 +92,6 @@ const (
 	levelError = "ERROR"
 )
 
-// getLogLevel converts parameter string to the appropriate slog level value.
 func getLogLevel(level string) slog.Level {
 	switch strings.ToUpper(strings.TrimSpace(level)) {
 	case levelDebug:
