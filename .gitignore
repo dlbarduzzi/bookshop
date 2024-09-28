@@ -1,0 +1,4 @@
+.env
+.local/
+docker-data/
+coverage.out
