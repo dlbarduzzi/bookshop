@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"github.com/dlbarduzzi/bookshop/internal/logging"
+)
 
 func main() {
-	fmt.Println("Welcome to my bookshop!")
+	log := logging.NewLoggerFromEnv()
+	log.Info("Welcome to my bookshop!")
 }
