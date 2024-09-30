@@ -2,6 +2,8 @@ package bookshop
 
 import (
 	"net/http"
+
+	"github.com/dlbarduzzi/bookshop/internal/middleware"
 )
 
 func (bs *Bookshop) Routes() http.Handler {
@@ -10,5 +12,5 @@ func (bs *Bookshop) Routes() http.Handler {
 	// Health endpoint.
 	mux.HandleFunc("GET /api/v1/health", bs.healthHandler)
 
-	return mux
+	return middleware.Recovery(mux)
 }
