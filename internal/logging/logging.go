@@ -79,7 +79,7 @@ func replaceAttr() slogAttr {
 		if attr.Key == slog.SourceKey {
 			source := attr.Value.Any().(*slog.Source)
 			attr.Key = "caller"
-			attr.Value = slog.StringValue(fmt.Sprintf("%s:%d", source.Function, source.Line))
+			attr.Value = slog.StringValue(fmt.Sprintf("%s:%d", source.File, source.Line))
 		}
 		return attr
 	}

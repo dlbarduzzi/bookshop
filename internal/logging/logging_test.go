@@ -154,7 +154,7 @@ func TestGetReplaceAttr(t *testing.T) {
 			logKey:    slog.SourceKey,
 			logValue:  slog.AnyValue(sr),
 			wantKey:   "caller",
-			wantValue: "main.main:12",
+			wantValue: "/path/to/file:12",
 		},
 	}
 

@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/dlbarduzzi/bookshop/internal/bookshop"
 	"github.com/dlbarduzzi/bookshop/internal/logging"
 	"github.com/dlbarduzzi/bookshop/internal/registry"
+	"github.com/dlbarduzzi/bookshop/internal/server"
 	"github.com/spf13/viper"
 )
 
@@ -32,9 +32,14 @@ func start(ctx context.Context) error {
 	}
 
 	bookshopConfig := getBookshopConfig(reg)
-	log.Info(fmt.Sprintf("Bookshop app running on port %d", bookshopConfig.Port))
+	log.Info("database connection established")
 
-	return nil
+	srv, err := server.NewServer(bookshopConfig.Port)
+	if err != nil {
+		return err
+	}
+
+	return srv.Start(ctx, nil)
 }
 
 func getBookshopConfig(v *viper.Viper) *bookshop.Config {
