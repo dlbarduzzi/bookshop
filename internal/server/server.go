@@ -65,7 +65,10 @@ func (s *Server) Start(ctx context.Context, handler http.Handler) error {
 
 		log.Info("completing background tasks")
 
-		s.WaitGroup.Wait()
+		if s.WaitGroup != nil {
+			s.WaitGroup.Wait()
+		}
+
 		shutdownErr <- nil
 	}()
 

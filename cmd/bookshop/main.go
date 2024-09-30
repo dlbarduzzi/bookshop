@@ -34,12 +34,18 @@ func start(ctx context.Context) error {
 	bookshopConfig := getBookshopConfig(reg)
 	log.Info("database connection established")
 
-	srv, err := server.NewServer(bookshopConfig.Port)
+	bs, err := bookshop.NewBookshop(ctx, bookshopConfig)
 	if err != nil {
 		return err
 	}
 
-	return srv.Start(ctx, nil)
+	srv, err := server.NewServer(bs.Port())
+	if err != nil {
+		return err
+	}
+
+	srv.WaitGroup = bs.WaitGroup()
+	return srv.Start(ctx, bs.Routes())
 }
 
 func getBookshopConfig(v *viper.Viper) *bookshop.Config {
