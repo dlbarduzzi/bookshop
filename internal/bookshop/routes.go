@@ -12,5 +12,5 @@ func (bs *Bookshop) Routes() http.Handler {
 	// Health endpoint.
 	mux.HandleFunc("GET /api/v1/health", bs.healthHandler)
 
-	return middleware.Recovery(mux)
+	return middleware.Recovery(middleware.RecordRequest(mux))
 }
