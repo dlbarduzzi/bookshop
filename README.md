@@ -24,20 +24,6 @@ make run
 
 Open the health endpoint `http://localhost:__PORT__/api/v1/health` with your browser to see if the app is running.
 
-## Setting up database
-
-Generate database migration (always generate when there is a table change).
-
-```sh
-npx drizzle-kit generate --name initial
-```
-
-Then, run your migration against the database.
-
-```sh
-npm run db:migrate
-```
-
 ## License
 
 MIT License
