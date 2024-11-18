@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"github.com/dlbarduzzi/guestbook/internal/logging"
+)
 
 func main() {
-	fmt.Println("Hello")
+	logger := logging.NewLoggerFromEnv()
+	logger.Info("Hello")
 }
