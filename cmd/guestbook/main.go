@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"time"
 
 	"github.com/dlbarduzzi/guestbook/internal/guestbook"
 	"github.com/dlbarduzzi/guestbook/internal/logging"
@@ -26,20 +24,14 @@ func main() {
 func start(ctx context.Context) error {
 	logger := logging.LoggerFromContext(ctx)
 
-	srv := server.NewServer(8080, logger)
+	port := 8000
+
+	srv := server.NewServer(port, logger)
 	app := guestbook.NewGuesbook(logger)
-
-	app.FakeHandler()
-
-	srv.RunBeforeShutdown(func() {
-		fmt.Println("Start before shutdown...")
-		time.Sleep(time.Second * 1)
-		fmt.Println("End before shutdown!")
-	})
 
 	srv.RunBeforeShutdown(func() {
 		app.Shutdown()
 	})
 
-	return srv.Start(ctx, nil)
+	return srv.Start(ctx, app.Routes())
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
-	"time"
 )
 
 type Guestbook struct {
@@ -17,16 +16,6 @@ func NewGuesbook(logger *slog.Logger) *Guestbook {
 		wg:     &sync.WaitGroup{},
 		logger: logger,
 	}
-}
-
-func (g *Guestbook) FakeHandler() {
-	g.logger.Info("This is the start of FakeHandler...")
-	g.Background(func() {
-		fmt.Println("START FakeHandler background...")
-		time.Sleep(time.Second * 3)
-		fmt.Println("END FakeHandler background...")
-	})
-	g.logger.Info("This is the end of FakeHandler. Goodbye!")
 }
 
 func (g *Guestbook) Background(fn func()) {
