@@ -1,30 +1,14 @@
 package main
 
 import (
-	"context"
-	"os"
+	"fmt"
 
-	"github.com/dlbarduzzi/guestbook/internal/logging"
-	"github.com/dlbarduzzi/guestbook/internal/server"
+	"github.com/dlbarduzzi/guestbook/internal/service"
 )
 
 func main() {
-	logger := logging.NewLoggerFromEnv().With("app", "guestbook")
+	port := 8080
 
-	ctx := context.Background()
-	ctx = logging.LoggerWithContext(ctx, logger)
-
-	if err := start(ctx); err != nil {
-		logger.Error(err.Error())
-		os.Exit(2)
-	}
-}
-
-func start(ctx context.Context) error {
-	logger := logging.LoggerFromContext(ctx)
-	logger.Info("app running...")
-
-	srv := server.NewServer(8000)
-
-	return srv.Start(ctx, nil)
+	svc := service.NewService(port)
+	fmt.Println(svc)
 }
