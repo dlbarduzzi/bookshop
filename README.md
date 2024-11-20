@@ -8,6 +8,22 @@
 
 A guestbook app that allows users to enter welcoming messages for others to read.
 
+## Getting started
+
+First, create a `.env` file similar to [`.env.example`](./.env.example).
+
+```sh
+cp .env.example .env
+```
+
+Then, run the development server:
+
+```sh
+make run
+```
+
+Open the health endpoint `http://localhost:__PORT__/api/v1/health` with your browser to see if the app is running.
+
 ## License
 
 [MIT License](./LICENSE)
