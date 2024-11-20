@@ -24,6 +24,10 @@ make run
 
 Open the health endpoint `http://localhost:__PORT__/api/v1/health` with your browser to see if the app is running.
 
+## Database setup
+
+Read the [DATABASE.md](./DATABASE.md) document for detailed information about setting up a local test database.
+
 ## License
 
 [MIT License](./LICENSE)
