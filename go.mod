@@ -2,7 +2,10 @@ module github.com/dlbarduzzi/guestbook
 
 go 1.23.3
 
-require github.com/spf13/viper v1.19.0
+require (
+	github.com/lib/pq v1.10.9
+	github.com/spf13/viper v1.19.0
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

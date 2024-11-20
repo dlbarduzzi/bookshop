@@ -4,6 +4,9 @@ import (
 	"context"
 	"os"
 
+	"github.com/spf13/viper"
+
+	"github.com/dlbarduzzi/guestbook/internal/database"
 	"github.com/dlbarduzzi/guestbook/internal/guestbook"
 	"github.com/dlbarduzzi/guestbook/internal/logging"
 	"github.com/dlbarduzzi/guestbook/internal/registry"
@@ -30,7 +33,16 @@ func start(ctx context.Context) error {
 		return err
 	}
 
-	port := reg.GetInt("GB_PORT")
+	port := reg.GetInt("GB_APP_PORT")
+	dbConfig := setDatabaseConfig(reg)
+
+	db, err := database.NewDatabase(dbConfig)
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+	logger.Info("database connection established")
 
 	srv := server.NewServer(port, logger)
 	app := guestbook.NewGuesbook(logger)
@@ -40,4 +52,13 @@ func start(ctx context.Context) error {
 	})
 
 	return srv.Start(ctx, app.Routes())
+}
+
+func setDatabaseConfig(v *viper.Viper) *database.Config {
+	return &database.Config{
+		ConnectionURL:   v.GetString("GB_DATABASE_CONNECTION_URL"),
+		MaxOpenConns:    v.GetInt("GB_DATABASE_MAX_OPEN_CONNS"),
+		MaxIdleConns:    v.GetInt("GB_DATABASE_MAX_IDLE_CONNS"),
+		ConnMaxIdleTime: v.GetDuration("GB_DATABASE_CONN_MAX_IDLE_TIME"),
+	}
 }
