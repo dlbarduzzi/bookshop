@@ -17,9 +17,7 @@ func NewRegistry() (*viper.Viper, error) {
 	reg.SetConfigName(_configName)
 
 	if err := reg.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	return reg, nil
