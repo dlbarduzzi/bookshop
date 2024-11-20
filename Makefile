@@ -1,6 +1,9 @@
 run:
 	@go run ./cmd/guestbook
 
+tidy:
+	@go mod tidy
+
 lint:
 	@golangci-lint run -c ./.golangci.yaml ./...
 

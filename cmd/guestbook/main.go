@@ -6,6 +6,7 @@ import (
 
 	"github.com/dlbarduzzi/guestbook/internal/guestbook"
 	"github.com/dlbarduzzi/guestbook/internal/logging"
+	"github.com/dlbarduzzi/guestbook/internal/registry"
 	"github.com/dlbarduzzi/guestbook/internal/server"
 )
 
@@ -24,7 +25,12 @@ func main() {
 func start(ctx context.Context) error {
 	logger := logging.LoggerFromContext(ctx)
 
-	port := 8000
+	reg, err := registry.NewRegistry()
+	if err != nil {
+		return err
+	}
+
+	port := reg.GetInt("GB_PORT")
 
 	srv := server.NewServer(port, logger)
 	app := guestbook.NewGuesbook(logger)
