@@ -82,11 +82,7 @@ migrate -path=./migrations -database=$DB_CONNECTION_URL force 1
 ## Insert data into the books table
 
 ```sql
-INSERT INTO books (title, authors, published_date, page_count, categories) VALUES 
-('The Hidden Path', ARRAY ['Jane Harper'], '2021-08-11', 325, ARRAY ['Mystery', 'Thriller']),
-('The Quantum Enigma', ARRAY ['Dr. Alan Turing', 'Emma Sinclair'], '2019-05-10', 432, ARRAY ['Science', 'Physics']),
-('The Art of Mindfulness', ARRAY ['Sophia Bennett'], '2020-11-02', 210, ARRAY ['Self-Help', 'Wellness']),
-('Legends of the Forgotten Realms', ARRAY ['Mark Ellison', 'Claire Dunne'], '2022-03-02', 510, ARRAY ['Fantasy', 'Adventure']),
-('Cooking Made Simple', ARRAY ['Ella Johnson'], '2018-07-12', 150, ARRAY ['Cooking', 'Lifestyle']),
-('The Digital Revolution', ARRAY ['Lucas Zhang'], '2023-01-05', 300, ARRAY ['Technology', 'Innovation']);
+INSERT INTO books (title, authors, published_date, page_count, categories) VALUES
+('Book 1', ARRAY ['Author 1'], '2020-01-01', 100, ARRAY ['Drama']),
+('Book 2', ARRAY ['Author 2'], '2020-02-02', 200, ARRAY ['Drama']);
 ```
