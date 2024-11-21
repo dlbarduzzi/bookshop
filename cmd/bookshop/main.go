@@ -33,8 +33,8 @@ func start(ctx context.Context) error {
 		return err
 	}
 
-	port := reg.GetInt("APP_PORT")
 	dbConfig := setDatabaseConfig(reg)
+	appConfig := setBookshopConfig(reg)
 
 	db, err := database.NewDatabase(dbConfig)
 	if err != nil {
@@ -44,8 +44,12 @@ func start(ctx context.Context) error {
 	defer db.Close()
 	logger.Info("database connection established")
 
-	srv := server.NewServer(port, logger)
-	app := bookshop.NewBookshop(logger)
+	app, err := bookshop.NewBookshop(db, logger, appConfig)
+	if err != nil {
+		return err
+	}
+
+	srv := server.NewServer(app.Port(), logger)
 
 	srv.RunBeforeShutdown(func() {
 		app.Shutdown()
@@ -60,5 +64,11 @@ func setDatabaseConfig(v *viper.Viper) *database.Config {
 		MaxOpenConns:    v.GetInt("DB_MAX_OPEN_CONNS"),
 		MaxIdleConns:    v.GetInt("DB_MAX_IDLE_CONNS"),
 		ConnMaxIdleTime: v.GetDuration("DB_CONN_MAX_IDLE_TIME"),
+	}
+}
+
+func setBookshopConfig(v *viper.Viper) *bookshop.Config {
+	return &bookshop.Config{
+		Port: v.GetInt("APP_PORT"),
 	}
 }

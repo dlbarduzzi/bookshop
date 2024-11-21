@@ -1,21 +1,33 @@
 package bookshop
 
 import (
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"sync"
 )
 
 type Bookshop struct {
+	config *Config
 	logger *slog.Logger
 	wg     *sync.WaitGroup
 }
 
-func NewBookshop(logger *slog.Logger) *Bookshop {
-	return &Bookshop{
-		wg:     &sync.WaitGroup{},
-		logger: logger,
+func NewBookshop(db *sql.DB, logger *slog.Logger, config *Config) (*Bookshop, error) {
+	cfg, err := config.parse()
+	if err != nil {
+		return nil, err
 	}
+
+	return &Bookshop{
+		config: cfg,
+		logger: logger,
+		wg:     &sync.WaitGroup{},
+	}, nil
+}
+
+func (b *Bookshop) Port() int {
+	return b.config.Port
 }
 
 func (b *Bookshop) Background(fn func()) {
