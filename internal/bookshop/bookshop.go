@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+
+	"github.com/dlbarduzzi/bookshop/internal/bookshop/model"
 )
 
 type Bookshop struct {
 	config *Config
 	logger *slog.Logger
+	models model.Models
 	wg     *sync.WaitGroup
 }
 
@@ -22,6 +25,7 @@ func NewBookshop(db *sql.DB, logger *slog.Logger, config *Config) (*Bookshop, er
 	return &Bookshop{
 		config: cfg,
 		logger: logger,
+		models: model.NewModels(db),
 		wg:     &sync.WaitGroup{},
 	}, nil
 }
