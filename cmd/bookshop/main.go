@@ -6,15 +6,15 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/dlbarduzzi/guestbook/internal/database"
-	"github.com/dlbarduzzi/guestbook/internal/guestbook"
-	"github.com/dlbarduzzi/guestbook/internal/logging"
-	"github.com/dlbarduzzi/guestbook/internal/registry"
-	"github.com/dlbarduzzi/guestbook/internal/server"
+	"github.com/dlbarduzzi/bookshop/internal/bookshop"
+	"github.com/dlbarduzzi/bookshop/internal/database"
+	"github.com/dlbarduzzi/bookshop/internal/logging"
+	"github.com/dlbarduzzi/bookshop/internal/registry"
+	"github.com/dlbarduzzi/bookshop/internal/server"
 )
 
 func main() {
-	logger := logging.NewLoggerFromEnv().With("app", "guestbook")
+	logger := logging.NewLoggerFromEnv().With("app", "bookshop")
 
 	ctx := context.Background()
 	ctx = logging.LoggerWithContext(ctx, logger)
@@ -33,7 +33,7 @@ func start(ctx context.Context) error {
 		return err
 	}
 
-	port := reg.GetInt("GB_APP_PORT")
+	port := reg.GetInt("APP_PORT")
 	dbConfig := setDatabaseConfig(reg)
 
 	db, err := database.NewDatabase(dbConfig)
@@ -45,7 +45,7 @@ func start(ctx context.Context) error {
 	logger.Info("database connection established")
 
 	srv := server.NewServer(port, logger)
-	app := guestbook.NewGuesbook(logger)
+	app := bookshop.NewBookshop(logger)
 
 	srv.RunBeforeShutdown(func() {
 		app.Shutdown()
@@ -56,9 +56,9 @@ func start(ctx context.Context) error {
 
 func setDatabaseConfig(v *viper.Viper) *database.Config {
 	return &database.Config{
-		ConnectionURL:   v.GetString("GB_DATABASE_CONNECTION_URL"),
-		MaxOpenConns:    v.GetInt("GB_DATABASE_MAX_OPEN_CONNS"),
-		MaxIdleConns:    v.GetInt("GB_DATABASE_MAX_IDLE_CONNS"),
-		ConnMaxIdleTime: v.GetDuration("GB_DATABASE_CONN_MAX_IDLE_TIME"),
+		ConnectionURL:   v.GetString("DB_CONNECTION_URL"),
+		MaxOpenConns:    v.GetInt("DB_MAX_OPEN_CONNS"),
+		MaxIdleConns:    v.GetInt("DB_MAX_IDLE_CONNS"),
+		ConnMaxIdleTime: v.GetDuration("DB_CONN_MAX_IDLE_TIME"),
 	}
 }

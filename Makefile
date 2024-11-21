@@ -1,5 +1,5 @@
 run:
-	@go run ./cmd/guestbook
+	@go run ./cmd/bookshop
 
 tidy:
 	@go mod tidy

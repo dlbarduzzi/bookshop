@@ -1,4 +1,4 @@
-module github.com/dlbarduzzi/guestbook
+module github.com/dlbarduzzi/bookshop
 
 go 1.23.3
 

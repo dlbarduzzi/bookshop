@@ -1,12 +1,12 @@
-# guestbook
+# bookshop
 
 <p>
-    <a href="https://github.com/dlbarduzzi/guestbook/actions/workflows/test.yaml" target="_blank" rel="noopener">
-        <img src="https://github.com/dlbarduzzi/guestbook/actions/workflows/test.yaml/badge.svg" alt="test" />
+    <a href="https://github.com/dlbarduzzi/bookshop/actions/workflows/test.yaml" target="_blank" rel="noopener">
+        <img src="https://github.com/dlbarduzzi/bookshop/actions/workflows/test.yaml/badge.svg" alt="test" />
     </a>
 </p>
 
-A guestbook app that allows users to enter welcoming messages for others to read.
+A bookshop app where users can search and find books to read.
 
 ## Getting started
 
@@ -26,7 +26,7 @@ Open the health endpoint `http://localhost:__PORT__/api/v1/health` with your bro
 
 ## Database setup
 
-Read the [DATABASE.md](./DATABASE.md) document for detailed information about setting up a local test database.
+Read the [database.md](./docs/database.md) document for detailed information about setting up a local test database.
 
 ## License
 

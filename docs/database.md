@@ -23,7 +23,7 @@ psql --version
 Connect to database.
 
 ```sh
-psql --host=localhost --dbname=guestbook --username=testu
+psql --host=localhost --dbname=bookshop --username=testu
 ```
 
 Verify current user.
@@ -39,14 +39,14 @@ Follow instructions to install the `migrate` tool [HERE](https://github.com/gola
 Generate a pair of migration files. Visit the [migrations](./migrations) folder to see all the migration files and content.
 
 ```sh
-migrate create -seq -ext=.sql -dir=./migrations create_messages_table
+migrate create -seq -ext=.sql -dir=./migrations create_books_table
 ```
 
 Apply migrations.
 
 ```sh
 # Database connection url should be exported like example below.
-# export DB_CONNECTION_URL='postgres://testu:testp@127.0.0.1:5432/guestbook?sslmode=disable'
+# export DB_CONNECTION_URL='postgres://testu:testp@127.0.0.1:5432/bookshop?sslmode=disable'
 migrate -path=./migrations -database=$DB_CONNECTION_URL up
 ```
 

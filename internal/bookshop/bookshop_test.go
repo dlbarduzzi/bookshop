@@ -1,4 +1,4 @@
-package guestbook
+package bookshop
 
 import (
 	"bytes"
@@ -9,9 +9,9 @@ import (
 	"testing"
 )
 
-func newTestGuestbook(t *testing.T) *Guestbook {
+func newTestBookshop(t *testing.T) *Bookshop {
 	t.Helper()
-	return &Guestbook{
+	return &Bookshop{
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
 }
