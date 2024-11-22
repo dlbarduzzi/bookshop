@@ -3,13 +3,11 @@ package model
 import (
 	"context"
 	"database/sql"
-	"net"
 	"time"
 )
 
 type Guest struct {
 	ID        int64     `json:"id"`
-	IP        net.IP    `json:"ip"`
 	Message   string    `json:"message"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -21,10 +19,11 @@ type GuestModel struct {
 
 type GuestStore interface {
 	GetAll() ([]*Guest, error)
+	Insert(*Guest) error
 }
 
 func (m GuestModel) GetAll() ([]*Guest, error) {
-	query := "SELECT id, ip, message, created_at, updated_at FROM guests LIMIT 10"
+	query := "SELECT id, message, created_at, updated_at FROM guests LIMIT 10"
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
@@ -43,7 +42,6 @@ func (m GuestModel) GetAll() ([]*Guest, error) {
 
 		err := rows.Scan(
 			&guest.ID,
-			&guest.IP,
 			&guest.Message,
 			&guest.CreatedAt,
 			&guest.UpdatedAt,
@@ -60,4 +58,22 @@ func (m GuestModel) GetAll() ([]*Guest, error) {
 	}
 
 	return guests, nil
+}
+
+func (m GuestModel) Insert(guest *Guest) error {
+	query := `
+        INSERT INTO guests (message)
+        VALUES ($1)
+        RETURNING id, created_at, updated_at`
+
+	args := []interface{}{
+		guest.Message,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(
+		&guest.ID, &guest.CreatedAt, &guest.UpdatedAt,
+	)
 }
