@@ -6,15 +6,15 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/dlbarduzzi/bookshop/internal/bookshop"
-	"github.com/dlbarduzzi/bookshop/internal/database"
-	"github.com/dlbarduzzi/bookshop/internal/logging"
-	"github.com/dlbarduzzi/bookshop/internal/registry"
-	"github.com/dlbarduzzi/bookshop/internal/server"
+	"github.com/dlbarduzzi/guestbook/internal/database"
+	"github.com/dlbarduzzi/guestbook/internal/guestbook"
+	"github.com/dlbarduzzi/guestbook/internal/logging"
+	"github.com/dlbarduzzi/guestbook/internal/registry"
+	"github.com/dlbarduzzi/guestbook/internal/server"
 )
 
 func main() {
-	logger := logging.NewLoggerFromEnv().With("app", "bookshop")
+	logger := logging.NewLoggerFromEnv().With("app", "guestbook")
 
 	ctx := context.Background()
 	ctx = logging.LoggerWithContext(ctx, logger)
@@ -34,7 +34,7 @@ func start(ctx context.Context) error {
 	}
 
 	dbConfig := setDatabaseConfig(reg)
-	appConfig := setBookshopConfig(reg)
+	appConfig := setGuestbookConfig(reg)
 
 	db, err := database.NewDatabase(dbConfig)
 	if err != nil {
@@ -44,7 +44,7 @@ func start(ctx context.Context) error {
 	defer db.Close()
 	logger.Info("database connection established")
 
-	app, err := bookshop.NewBookshop(db, logger, appConfig)
+	app, err := guestbook.NewGuestbook(db, logger, appConfig)
 	if err != nil {
 		return err
 	}
@@ -67,8 +67,8 @@ func setDatabaseConfig(v *viper.Viper) *database.Config {
 	}
 }
 
-func setBookshopConfig(v *viper.Viper) *bookshop.Config {
-	return &bookshop.Config{
+func setGuestbookConfig(v *viper.Viper) *guestbook.Config {
+	return &guestbook.Config{
 		Port: v.GetInt("APP_PORT"),
 	}
 }

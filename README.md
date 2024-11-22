@@ -1,12 +1,12 @@
-# bookshop
+# guestbook
 
 <p>
-    <a href="https://github.com/dlbarduzzi/bookshop/actions/workflows/test.yaml" target="_blank" rel="noopener">
-        <img src="https://github.com/dlbarduzzi/bookshop/actions/workflows/test.yaml/badge.svg" alt="test" />
+    <a href="https://github.com/dlbarduzzi/guestbook/actions/workflows/test.yaml" target="_blank" rel="noopener">
+        <img src="https://github.com/dlbarduzzi/guestbook/actions/workflows/test.yaml/badge.svg" alt="test" />
     </a>
 </p>
 
-A bookshop app where users can search and find books to read.
+A guestbook app where users can write welcoming messages and spread positivity.
 
 ## Getting started
 

@@ -1,4 +1,4 @@
-package bookshop
+package guestbook
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 func TestHealthHandler(t *testing.T) {
 	t.Parallel()
 
-	app := newTestBookshop(t)
+	app := newTestGuestbook(t)
 	srv := newTestServer(t, app.Routes())
 	defer srv.Close()
 

@@ -1,4 +1,4 @@
-package bookshop
+package guestbook
 
 import (
 	"bytes"
@@ -9,12 +9,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/dlbarduzzi/bookshop/internal/bookshop/model/mocks"
+	"github.com/dlbarduzzi/guestbook/internal/guestbook/model/mocks"
 )
 
-func newTestBookshop(t *testing.T) *Bookshop {
+func newTestGuestbook(t *testing.T) *Guestbook {
 	t.Helper()
-	return &Bookshop{
+	return &Guestbook{
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 		models: mocks.NewModels(&sql.DB{}),
 	}

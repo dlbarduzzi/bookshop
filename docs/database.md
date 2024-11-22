@@ -23,7 +23,7 @@ psql --version
 Connect to database.
 
 ```sh
-psql --host=localhost --dbname=bookshop --username=testu
+psql --host=localhost --dbname=guestbook --username=testu
 ```
 
 Verify current user.
@@ -39,14 +39,14 @@ Follow instructions to install the `migrate` tool [HERE](https://github.com/gola
 Generate a pair of migration files. Visit the [migrations](../migrations) folder to see all the migration files and content.
 
 ```sh
-migrate create -seq -ext=.sql -dir=./migrations create_books_table
+migrate create -seq -ext=.sql -dir=./migrations create_message_table
 ```
 
 Apply migrations.
 
 ```sh
 # Database connection url should be exported like example below.
-# export DB_CONNECTION_URL='postgres://testu:testp@127.0.0.1:5432/bookshop?sslmode=disable'
+# export DB_CONNECTION_URL='postgres://testu:testp@127.0.0.1:5432/guestbook?sslmode=disable'
 migrate -path=./migrations -database=$DB_CONNECTION_URL up
 ```
 
@@ -79,10 +79,10 @@ migrate -path=./migrations -database=$DB_CONNECTION_URL down 1
 migrate -path=./migrations -database=$DB_CONNECTION_URL force 1
 ```
 
-## Insert data into the books table
+## Insert data into the guests table
 
 ```sql
-INSERT INTO books (title, authors, published_date, page_count, categories) VALUES
-('Book 1', ARRAY ['Author 1'], '2020-01-01', 100, ARRAY ['Drama']),
-('Book 2', ARRAY ['Author 2'], '2020-02-02', 200, ARRAY ['Drama']);
+INSERT INTO guests (ip, message) VALUES
+('10.0.0.1', 'Life is a beautiful journey.'),
+('10.0.0.2', 'Live life to the fullest.');
 ```

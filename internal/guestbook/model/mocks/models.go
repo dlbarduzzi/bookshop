@@ -3,15 +3,15 @@ package mocks
 import (
 	"database/sql"
 
-	"github.com/dlbarduzzi/bookshop/internal/bookshop/model"
+	"github.com/dlbarduzzi/guestbook/internal/guestbook/model"
 )
 
 type Models struct {
-	Books *BookModel
+	Guests *GuestModel
 }
 
 func NewModels(db *sql.DB) model.Models {
 	return model.Models{
-		Books: &BookModel{DB: db},
+		Guests: &GuestModel{DB: db},
 	}
 }

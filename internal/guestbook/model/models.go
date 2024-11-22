@@ -3,11 +3,11 @@ package model
 import "database/sql"
 
 type Models struct {
-	Books BookStore
+	Guests GuestStore
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Books: &BookModel{DB: db},
+		Guests: &GuestModel{DB: db},
 	}
 }

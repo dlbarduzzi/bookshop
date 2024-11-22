@@ -1,4 +1,4 @@
-package bookshop
+package guestbook
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 func TestServerError(t *testing.T) {
 	t.Parallel()
 
-	app := newTestBookshop(t)
+	app := newTestGuestbook(t)
 
 	r, err := http.NewRequest(http.MethodGet, "/", nil)
 	if err != nil {
