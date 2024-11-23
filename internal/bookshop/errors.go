@@ -1,10 +1,10 @@
-package guestbook
+package bookshop
 
 import (
 	"log/slog"
 	"net/http"
 
-	"github.com/dlbarduzzi/guestbook/internal/jsontil"
+	"github.com/dlbarduzzi/bookshop/internal/jsontil"
 )
 
 type serverErrorResponse struct {
@@ -12,8 +12,8 @@ type serverErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func (g *Guestbook) serverError(w http.ResponseWriter, r *http.Request, e error) {
-	g.logger.Error(
+func (b *Bookshop) serverError(w http.ResponseWriter, r *http.Request, e error) {
+	b.logger.Error(
 		e.Error(),
 		slog.String("path", r.URL.Path),
 		slog.String("method", r.Method),

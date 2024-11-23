@@ -33,7 +33,7 @@ func TestNewRegistry(t *testing.T) {
 		t.Fatalf("expected error to be nil; got %v", err)
 	}
 
-	env := reg.GetString("TEST_VAR")
+	env := reg.GetString("TEST_GB_VAR")
 	if env != "test-value" {
 		t.Fatal(err)
 	}

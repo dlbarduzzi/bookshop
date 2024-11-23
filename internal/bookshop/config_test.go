@@ -1,4 +1,4 @@
-package guestbook
+package bookshop
 
 import "testing"
 
@@ -8,7 +8,7 @@ func TestConfigParse(t *testing.T) {
 	config := &Config{}
 
 	_, err := config.parse()
-	wantErr := "invalid guestbook '0' port number"
+	wantErr := "invalid bookshop '0' port number"
 
 	if err == nil || err.Error() != wantErr {
 		t.Errorf("expected error to be %v; got %v", wantErr, err)
