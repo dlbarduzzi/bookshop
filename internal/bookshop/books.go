@@ -13,7 +13,14 @@ type listBooksResponse struct {
 }
 
 func (b *Bookshop) listBooksHandler(w http.ResponseWriter, r *http.Request) {
-	books, err := b.models.Books.GetAll()
+	var input struct {
+		model.Filters
+	}
+
+	input.Filters.Page = 1
+	input.Filters.PageSize = 10
+
+	books, err := b.models.Books.GetAll(input.Filters)
 	if err != nil {
 		b.serverError(w, r, err)
 		return

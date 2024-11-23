@@ -25,16 +25,21 @@ type BookModel struct {
 }
 
 type BookStore interface {
-	GetAll() ([]*Book, error)
+	GetAll(Filters) ([]*Book, error)
 }
 
-func (m BookModel) GetAll() ([]*Book, error) {
-	query := "SELECT * FROM BOOKS LIMIT 10"
+func (m BookModel) GetAll(filters Filters) ([]*Book, error) {
+	query := `
+        SELECT count(*) OVER(), id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'),
+        page_count, categories, version, created_at, updated_at
+        FROM books LIMIT $1 OFFSET $2`
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, query)
+	args := []interface{}{filters.limit(), filters.offset()}
+
+	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,11 +47,13 @@ func (m BookModel) GetAll() ([]*Book, error) {
 	defer rows.Close()
 
 	books := []*Book{}
+	count := 0
 
 	for rows.Next() {
 		var book Book
 
 		err := rows.Scan(
+			&count,
 			&book.ID,
 			&book.Title,
 			pq.Array(&book.Authors),
