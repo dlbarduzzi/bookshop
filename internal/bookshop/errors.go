@@ -5,7 +5,26 @@ import (
 	"net/http"
 
 	"github.com/dlbarduzzi/bookshop/internal/jsontil"
+	"github.com/dlbarduzzi/bookshop/internal/validator"
 )
+
+type validationErrorResponse struct {
+	Code    int              `json:"code"`
+	Message string           `json:"message"`
+	Errors  validator.Errors `json:"errors"`
+}
+
+func (b *Bookshop) validationError(w http.ResponseWriter, r *http.Request, e validator.Errors) {
+	res := validationErrorResponse{
+		Code:    http.StatusBadRequest,
+		Message: "Input validation error.",
+		Errors:  e,
+	}
+	if err := jsontil.Marshal(w, res, res.Code, nil); err != nil {
+		b.serverError(w, r, err)
+		return
+	}
+}
 
 type serverErrorResponse struct {
 	Code    int    `json:"code"`

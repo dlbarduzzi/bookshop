@@ -1,7 +1,6 @@
 package bookshop
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/dlbarduzzi/bookshop/internal/bookshop/model"
@@ -26,7 +25,7 @@ func (b *Bookshop) listBooksHandler(w http.ResponseWriter, r *http.Request) {
 	input.Filters.PageSize = b.readInt(q, "page_size", 10, v)
 
 	if !v.IsValid() {
-		b.serverError(w, r, fmt.Errorf("invalid input"))
+		b.validationError(w, r, v.Errors)
 		return
 	}
 
