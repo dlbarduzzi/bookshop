@@ -24,7 +24,7 @@ func (b *Bookshop) listBooksHandler(w http.ResponseWriter, r *http.Request) {
 	input.Filters.Page = b.readInt(q, "page", 1, v)
 	input.Filters.PageSize = b.readInt(q, "page_size", 10, v)
 
-	if !v.IsValid() {
+	if input.Filters.Validate(v); !v.IsValid() {
 		b.validationError(w, r, v.Errors)
 		return
 	}
