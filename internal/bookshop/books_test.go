@@ -21,6 +21,11 @@ func TestListBooksHandler(t *testing.T) {
 			wantCode: http.StatusBadRequest,
 		},
 		{
+			name:     "valid page parameter",
+			query:    "?page=10",
+			wantCode: http.StatusOK,
+		},
+		{
 			name:     "success",
 			query:    "",
 			wantCode: http.StatusOK,
@@ -40,6 +45,16 @@ func TestListBooksHandler(t *testing.T) {
 			}
 
 			if tc.wantCode != http.StatusOK {
+				var res validationErrorResponse
+
+				if err := json.Unmarshal([]byte(body), &res); err != nil {
+					t.Fatal(err)
+				}
+
+				wantMessage := "Input validation error."
+				if res.Message != wantMessage {
+					t.Errorf("expected error message to be %s; got %s", wantMessage, res.Message)
+				}
 				return
 			}
 
