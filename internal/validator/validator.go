@@ -1,5 +1,7 @@
 package validator
 
+import "slices"
+
 type Errors map[string]string
 
 type Validator struct {
@@ -18,4 +20,8 @@ func (v *Validator) AddError(key string, value string) {
 	if _, exists := v.Errors[key]; !exists {
 		v.Errors[key] = value
 	}
+}
+
+func ValueInList[T comparable](value T, list ...T) bool {
+	return slices.Contains(list, value)
 }

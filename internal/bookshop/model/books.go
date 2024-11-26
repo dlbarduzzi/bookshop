@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -25,19 +26,27 @@ type BookModel struct {
 }
 
 type BookStore interface {
-	GetAll(Filters) ([]*Book, Metadata, error)
+	GetAll(string, []string, Filters) ([]*Book, Metadata, error)
 }
 
-func (m BookModel) GetAll(filters Filters) ([]*Book, Metadata, error) {
-	query := `
-        SELECT count(*) OVER(), id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'),
-        page_count, categories, version, created_at, updated_at
-        FROM books LIMIT $1 OFFSET $2`
+func (m BookModel) GetAll(
+	title string,
+	categories []string,
+	filters Filters,
+) ([]*Book, Metadata, error) {
+	query := fmt.Sprintf(`
+		SELECT count(*) OVER(), id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'),
+            page_count, categories, version, created_at, updated_at
+		FROM books
+		WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
+        AND (categories @> $2 or $2 = '{}')
+		ORDER BY %s %s, id ASC
+		LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	args := []interface{}{filters.limit(), filters.offset()}
+	args := []interface{}{title, pq.Array(categories), filters.limit(), filters.offset()}
 
 	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {

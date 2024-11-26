@@ -10,8 +10,10 @@ func TestValidateFilters(t *testing.T) {
 	t.Parallel()
 
 	f := &Filters{
-		Page:     1,
-		PageSize: 10,
+		Page:         1,
+		PageSize:     10,
+		Sort:         "name",
+		SortSafeList: []string{"id", "name"},
 	}
 
 	v := validator.NewValidator()
@@ -141,6 +143,63 @@ func TestValidatePageSize(t *testing.T) {
 
 			if err != tc.wantErr {
 				t.Errorf("expected page_size error to be %s; got %s", tc.wantErr, err)
+			}
+		})
+	}
+}
+
+func TestFiltersValidateSortSafeList(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		sort     string
+		safeList []string
+		isValid  bool
+		wantErr  string
+	}{
+		{
+			name:     "invalid",
+			sort:     "id",
+			safeList: []string{"name"},
+			isValid:  false,
+			wantErr:  "invalid sort value",
+		},
+		{
+			name:     "valid",
+			sort:     "name",
+			safeList: []string{"name"},
+			isValid:  true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			f := &Filters{
+				Sort:         tc.sort,
+				SortSafeList: tc.safeList,
+			}
+
+			v := validator.NewValidator()
+			f.validateSortSafeList(v)
+
+			if v.IsValid() != tc.isValid {
+				t.Errorf(
+					"expected filters sort validation to be %t; got %t",
+					tc.isValid,
+					v.IsValid(),
+				)
+			}
+
+			err, exists := v.Errors["sort"]
+			if !exists && !tc.isValid {
+				t.Error("expected sort field in book validation error")
+			}
+
+			if err != tc.wantErr {
+				t.Errorf("expected sort error to be %s; got %s", tc.wantErr, err)
 			}
 		})
 	}

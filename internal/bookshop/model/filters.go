@@ -1,10 +1,16 @@
 package model
 
-import "github.com/dlbarduzzi/bookshop/internal/validator"
+import (
+	"strings"
+
+	"github.com/dlbarduzzi/bookshop/internal/validator"
+)
 
 type Filters struct {
-	Page     int
-	PageSize int
+	Page         int
+	PageSize     int
+	Sort         string
+	SortSafeList []string
 }
 
 func (f Filters) limit() int {
@@ -15,9 +21,26 @@ func (f Filters) offset() int {
 	return (f.Page - 1) * f.PageSize
 }
 
+func (f Filters) sortColumn() string {
+	for _, safeValue := range f.SortSafeList {
+		if f.Sort == safeValue {
+			return strings.TrimPrefix(f.Sort, "-")
+		}
+	}
+	panic("unsafe sort parameter: " + f.Sort)
+}
+
+func (f Filters) sortDirection() string {
+	if strings.HasPrefix(f.Sort, "-") {
+		return "DESC"
+	}
+	return "ASC"
+}
+
 func (f *Filters) Validate(v *validator.Validator) {
 	f.validatePage(v)
 	f.validatePageSize(v)
+	f.validateSortSafeList(v)
 }
 
 func (f Filters) validatePage(v *validator.Validator) {
@@ -31,13 +54,20 @@ func (f Filters) validatePage(v *validator.Validator) {
 	}
 }
 
-func (f *Filters) validatePageSize(v *validator.Validator) {
+func (f Filters) validatePageSize(v *validator.Validator) {
 	if f.PageSize < 1 {
 		v.AddError("page_size", "must be greater than 0")
 		return
 	}
 	if f.PageSize > 100 {
 		v.AddError("page_size", "cannot be greater than 100")
+		return
+	}
+}
+
+func (f Filters) validateSortSafeList(v *validator.Validator) {
+	if !validator.ValueInList(f.Sort, f.SortSafeList...) {
+		v.AddError("sort", "invalid sort value")
 		return
 	}
 }

@@ -10,7 +10,11 @@ type BookModel struct {
 	DB *sql.DB
 }
 
-func (m BookModel) GetAll(filters model.Filters) ([]*model.Book, model.Metadata, error) {
+func (m BookModel) GetAll(
+	title string,
+	categories []string,
+	filters model.Filters,
+) ([]*model.Book, model.Metadata, error) {
 	books := []*model.Book{
 		{
 			ID:    1,
