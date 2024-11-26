@@ -9,8 +9,9 @@ import (
 )
 
 type listBooksResponse struct {
-	Code  int           `json:"code"`
-	Books []*model.Book `json:"books"`
+	Code     int            `json:"code"`
+	Books    []*model.Book  `json:"books"`
+	Metadata model.Metadata `json:"metadata"`
 }
 
 func (b *Bookshop) listBooksHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,15 +30,16 @@ func (b *Bookshop) listBooksHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	books, err := b.models.Books.GetAll(input.Filters)
+	books, metadata, err := b.models.Books.GetAll(input.Filters)
 	if err != nil {
 		b.serverError(w, r, err)
 		return
 	}
 
 	res := listBooksResponse{
-		Code:  http.StatusOK,
-		Books: books,
+		Code:     http.StatusOK,
+		Books:    books,
+		Metadata: metadata,
 	}
 
 	if err := jsontil.Marshal(w, res, res.Code, nil); err != nil {

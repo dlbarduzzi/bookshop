@@ -25,10 +25,10 @@ type BookModel struct {
 }
 
 type BookStore interface {
-	GetAll(Filters) ([]*Book, error)
+	GetAll(Filters) ([]*Book, Metadata, error)
 }
 
-func (m BookModel) GetAll(filters Filters) ([]*Book, error) {
+func (m BookModel) GetAll(filters Filters) ([]*Book, Metadata, error) {
 	query := `
         SELECT count(*) OVER(), id, title, authors, TO_CHAR(published_date, 'yyyy-mm-dd'),
         page_count, categories, version, created_at, updated_at
@@ -41,19 +41,19 @@ func (m BookModel) GetAll(filters Filters) ([]*Book, error) {
 
 	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
 
 	books := []*Book{}
-	count := 0
+	totalRecords := 0
 
 	for rows.Next() {
 		var book Book
 
 		err := rows.Scan(
-			&count,
+			&totalRecords,
 			&book.ID,
 			&book.Title,
 			pq.Array(&book.Authors),
@@ -65,15 +65,17 @@ func (m BookModel) GetAll(filters Filters) ([]*Book, error) {
 			&book.UpdatedAt,
 		)
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		books = append(books, &book)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
-	return books, nil
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return books, metadata, nil
 }
